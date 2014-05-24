@@ -1,0 +1,268 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo添加多说评论框指南 | lee&#39;s blog</title>
+  <meta name="author" content="Li Jianyang">
+  
+  <meta name="description" content="记录与分享">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Hexo添加多说评论框指南"/>
+  <meta property="og:site_name" content="lee&#39;s blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="lee&#39;s blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">lee&#39;s blog</a></h1>
+  <h2 class="subtitle">世界以痛吻我 要我报之以歌</h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="/atom.xml">RSS</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-05-24T16:50:48.000Z"><a href="/2014/05/25/duoshuo_tutorial/">May 25 2014</a></time>
+      
+      
+  
+    <h1 class="title">Hexo添加多说评论框指南</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>本文关于如何为Hexo添加多说评论框</p>
+<a id="more"></a>
+
+<p>Hexo默认使用的第三方评论系统是Disqus，Disqus是外国的评论系统，貌似挺红火的，不过听说不太符合天朝的国情，不支持什么新浪微博啊之类的吧？还是把它换成多说比较接地气。</p>
+<h2 id="安装过程">安装过程</h2>
+<h3 id="STEP_1">STEP 1</h3>
+<p>前往<a href="http://duoshuo.com/" target="_blank">多说</a>注册，添加自己的网站信息，就会获得类似以下的HTML代码。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+</pre></td><td class="code"><pre><span class="comment">&lt;!-- 多说评论框 start --&gt;</span>
+	<span class="tag">&lt;<span class="title">div</span> <span class="attribute">class</span>=<span class="value">"ds-thread"</span> <span class="attribute">data-thread-key</span>=<span class="value">"请将此处替换成文章在你的站点中的ID"</span> <span class="attribute">data-title</span>=<span class="value">"请替换成文章的标题"</span> <span class="attribute">data-url</span>=<span class="value">"请替换成文章的网址"</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+<span class="comment">&lt;!-- 多说评论框 end --&gt;</span>
+<span class="comment">&lt;!-- 多说公共JS代码 start (一个网页只需插入一次) --&gt;</span>
+<span class="tag">&lt;<span class="title">script</span> <span class="attribute">type</span>=<span class="value">"text/javascript"</span>&gt;</span><span class="javascript">
+<span class="keyword">var</span> duoshuoQuery = {short_name:<span class="string">"leejianyang"</span>};
+	(<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+		<span class="keyword">var</span> ds = document.createElement(<span class="string">'script'</span>);
+		ds.type = <span class="string">'text/javascript'</span>;ds.async = <span class="literal">true</span>;
+		ds.src = (document.location.protocol == <span class="string">'https:'</span> ? <span class="string">'https:'</span> : <span class="string">'http:'</span>) + <span class="string">'//static.duoshuo.com/embed.js'</span>;
+		ds.charset = <span class="string">'UTF-8'</span>;
+		(document.getElementsByTagName(<span class="string">'head'</span>)[<span class="number">0</span>] 
+		 || document.getElementsByTagName(<span class="string">'body'</span>)[<span class="number">0</span>]).appendChild(ds);
+	})();
+	</span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
+<span class="comment">&lt;!-- 多说公共JS代码 end --&gt;</span>
+</pre></td></tr></table></figure>
+
+<h3 id="STEP_2">STEP 2</h3>
+<p>找到自己使用的theme的文件夹里面的某个名叫comment.ejs的文件，例如我的主题名称叫tyrant，那么comment.ejs位于的路径是themes\tyrant\layout_partial\comment.ejs，打开它并准备编辑。</p>
+<h3 id="STEP_3">STEP 3</h3>
+<p>删除comment.ejs原本的所有内容（注：原本的内容就是使用Disqus要用到的代码，可先备份下来）。<br>将STEP 1的代码复制到该文件中。</p>
+<h3 id="STEP_4">STEP 4</h3>
+<p>将多说提供的代码用以下两行代码包裹起来：<br>&lt;% if (page.comments) { %&gt;<br>    这里要放置多说提供的代码<br>&lt;% } %&gt;</p>
+<h3 id="STEP_5">STEP 5</h3>
+<p>将 data-title=”请替换成文章的标题” 替换成 data-title=”&lt;%= page.title %&gt;”<br>将data-url=”请替换成文章的网址” 替换成 data-url=”&lt;%= page.permalink %&gt;”<br>将data-thread-key=”请将此处替换成文章在你的站点中的ID” 替换成data-thread-key=”&lt;%= page.path %&gt;”</p>
+<p>编辑完后大概长成酱紫~<br><img src="http://blog-ljy.qiniudn.com/2014052523423523.png" alt=""></p>
+<p>大功告成！！</p>
+<hr>
+<h2 id="原理浅析">原理浅析</h2>
+<p>首先，Hexo使用了EJS模板引擎。（<a href="http://baike.baidu.com/view/4258079.htm" target="_blank">什么是模板引擎？</a>）</p>
+<p>关键是第4和第5步。</p>
+<p>第4步的作用是判断当前页面是否应该加入评论框框。如果不进行第4步，blog的每个页面都会添加上多说的评论框。它是通过page.comments的布尔值来判断的。至于哪个页面的page.comments应该设为什么样的值我们不需要关心，Hexo已经帮我们设好了。</p>
+<p>至于第5步，主要就是告诉多说，哪条评论对应的究竟是你的博客里的哪篇文章。</p>
+<p>step4和step5都用到了page这个object。</p>
+<blockquote>
+<p>page的主要属性有：<br>{<br>“title”: “文章标题”,</p>
+<p>“date”: “文章的发布日期（Moment.js 库）“,</p>
+<p>“updated”: “文章的更新日期（Moment.js 库）“,</p>
+<p>“comments”: “ 开启此文章的留言功能 boolean 值”,</p>
+<p>“layout”: “ 文章布局”,<br>“content”: “文章内文”,</p>
+<p>“excerpt”: “ 文章摘要（内文中 之前的内容）”,</p>
+<p>“source”: “about/index.html 文件的相对路径”,</p>
+<p>“path”: “about/index.html 文章的相对路径”,</p>
+<p>“ctime”: “2013-04-05T14:38:36.000Z”,</p>
+<p>“mtime”: “2013-04-05T14:38:41.000Z”,</p>
+<p>“permalink”: “ 完整的网络访问路径”,</p>
+<p>“full_path”: “D:\hexo11/source/about/index.html 原始文件路径”,</p>
+<p>“categories” : “{}“,</p>
+<p>“tags”: “{}”</p>
+<p>“_id”: 1<br>}</p>
+</blockquote>
+<p>ps.提供给多说的div属性data-thread-key，应该是用来作为每篇博文的唯一标识的，应该尽量保证它的唯一性，所以我选用了page.path</p>
+<p>以上。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/Hexo DIY/">Hexo DIY</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/评论框/">评论框</a>, <a href="/tags/多说/">多说</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+<!-- 多说评论框 start -->
+
+	<div class="ds-thread" data-thread-key="2014/05/25/duoshuo_tutorial/" data-title="Hexo添加多说评论框指南" data-url="http://www.leejianyang.com/2014/05/25/duoshuo_tutorial/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"leejianyang"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="Search">
+    <input type="hidden" name="q" value="site:www.leejianyang.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/Hexo DIY/">Hexo DIY</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2014/05/25/duoshuo_tutorial/">Hexo添加多说评论框指南</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">Tags</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/多说/">多说</a><small>1</small></li>
+  
+    <li><a href="/tags/评论框/">评论框</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2014 Li Jianyang
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
