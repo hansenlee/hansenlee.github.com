@@ -1,0 +1,526 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>快速掌握Scala的50%：类和对象基础 | lee&#39;s blog</title>
+  <meta name="author" content="Li Jianyang">
+  
+  <meta name="description" content="记录与分享">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="快速掌握Scala的50%：类和对象基础"/>
+  <meta property="og:site_name" content="lee&#39;s blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="lee&#39;s blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+  <meta name="baidu-site-verification" content="EeO4EOcXAr" />
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">lee&#39;s blog</a></h1>
+  <h2 class="subtitle">世界以痛吻我 要我报之以歌</h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="/atom.xml">RSS</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-05-29T09:11:30.000Z"><a href="/2014/05/29/scala_note_class_and_object/">May 29 2014</a></time>
+      
+      
+  
+    <h1 class="title">快速掌握Scala的50%：类和对象基础</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>Scala读书笔记，主要内容是创建类、构造函数、字段、单例对象和单例对象。</p>
+<a id="more"></a>
+
+<p><em>参考<a href="http://blog.csdn.net/myan/article/details/3144661" target="_blank">孟岩：快速掌握一个语言最常用的50%</a>而写的Scala读书笔记系列。</em></p>
+<p>Scala是一门纯粹的面向对象语言。</p>
+<h2 id="创建类">创建类</h2>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="code"><pre><span class="class"><span class="keyword">class</span> <span class="title">Car</span><span class="params">(val year: Int)</span> {</span>
+    <span class="keyword">private</span> <span class="keyword">var</span> milesDriven: Int = <span class="number">0</span>
+    
+    <span class="keyword">def</span> miles() = milesDriven
+    
+    <span class="keyword">def</span> drive(distance: Int) {
+        milesDriven += Math.abs(distance)
+    }
+}
+
+<span class="keyword">val</span> car = <span class="keyword">new</span> Car(<span class="number">2009</span>)    <span class="comment">// 创建对象</span>
+</pre></td></tr></table></figure>
+
+<p>还可以再简单一点地创建类：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+</pre></td><td class="code"><pre><span class="class"><span class="keyword">class</span> <span class="type">CreditCard</span><span class="container">(<span class="title">val</span> <span class="title">number</span>: <span class="type">Int</span>, <span class="title">var</span> <span class="title">creditLimit</span>: <span class="type">Int</span>)</span></span>
+</pre></td></tr></table></figure><br>如果没有什么东西要放在类定义里面，连大括号都不需要，简单的一行代码就定义了一个类。<br><br>## 字段<br><br>编译器会如何处理以上的CreditCard的定义呢？<br>我们把number声明为val，所以Scala把它定义为一个private final的字段，给它创建了public方法number()，用以取值。<br>因为creditLimit声明为var，所以Scala将它定义了一个private字段，叫做creditLimit，并同时提供了public的getter和setter方法。<br>如果参数既不是val，又不是var，那Scala就会创建一个private字段以及private getter和setter方法。不过，就不能在类外访问这个参数了。<br><br>看以下代码示例：<br><figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td><td class="code"><pre><span class="class"><span class="keyword">class</span> <span class="type">A</span><span class="container">(<span class="title">val</span> <span class="title">x</span>: <span class="type">Int</span>, <span class="title">var</span> <span class="title">y</span>: <span class="type">Int</span>, <span class="title">z</span>: <span class="type">Int</span>)</span>
+
+val a = new <span class="type">A</span><span class="container">(2, 3, 4)</span>
+println<span class="container">(<span class="title">a</span>.<span class="title">x</span>)</span>
+println<span class="container">(<span class="title">a</span>.<span class="title">y</span>)</span>
+println<span class="container">(<span class="title">a</span>.<span class="title">z</span>)</span>       // error: a.z是private属性，不能访问
+
+a.x = 22           // error: a.x声明为val，是一个不可变的属性
+a.y = 33</span>
+</pre></td></tr></table></figure>
+
+<p>还可以在类里面定义其他字段：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre></td><td class="code"><pre><span class="class"><span class="keyword">class</span> <span class="title">ChecksumAccumulator</span> {</span>
+    var <span class="keyword">sum</span> = <span class="number">0</span>;
+}
+
+val objA = <span class="keyword">new</span> ChecksumAccumulator();
+val objB = <span class="keyword">new</span> ChecksumAccumulator();
+
+println(objA.<span class="keyword">sum</span>);
+println(objB.<span class="keyword">sum</span>);
+objA.<span class="keyword">sum</span> = <span class="number">1</span>;
+println(objA.<span class="keyword">sum</span>);
+println(objB.<span class="keyword">sum</span>);
+</pre></td></tr></table></figure>
+
+<p>输出:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+</pre></td><td class="code"><pre>0
+0
+1
+0
+</pre></td></tr></table></figure>
+
+
+<h2 id="构造函数">构造函数</h2>
+<p>放到类定义中的任何表达式或者可执行语句都会作为主构造函数的一部分执行。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+</pre></td><td class="code"><pre><span class="class"><span class="keyword">class</span> <span class="title">Sample</span> {</span>
+  println(<span class="string">"You are constructing an instance of Sample"</span>)
+}
+
+<span class="keyword">new</span> Sample
+</pre></td></tr></table></figure><br>println的代码也会被视为主构造函数的一部分而被执行，因而创建对象的时候会输出：<br><figure class="highlight"><table><tr><td class="gutter"><pre>1
+</pre></td><td class="code"><pre><span class="type">You</span> are constructing an <span class="keyword">instance</span> <span class="keyword">of</span> <span class="type">Sample</span>
+</pre></td></tr></table></figure>
+
+<p>除了主构造函数，还有副构造函数。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+</pre></td><td class="code"><pre><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(val firstName: String, val lastName: String)</span> {</span>
+  <span class="keyword">private</span> <span class="keyword">var</span> position: String = _
+
+  println(<span class="string">"Creating "</span> + toString())
+
+  <span class="keyword">def</span> <span class="keyword">this</span> (firstName: String, lastName: String, positionHeld: String) {
+    <span class="keyword">this</span> (firstName, lastName)
+    position = positionHeld
+  }
+
+  <span class="keyword">override</span> <span class="keyword">def</span> toString() : String = {
+    firstName + <span class="string">""</span> + lastName + <span class="string">" holds "</span> + position + <span class="string">" position "</span>
+  }
+}
+
+<span class="keyword">val</span> john = <span class="keyword">new</span> Person(<span class="string">"John"</span>, <span class="string">"Smith"</span>, <span class="string">"Analyst"</span>)
+println(john)
+<span class="keyword">val</span> bill = <span class="keyword">new</span> Person(<span class="string">"Bill"</span>, <span class="string">"Walker"</span>)
+println(bill)
+</pre></td></tr></table></figure>
+
+<p>运行以上代码，输入如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+</pre></td><td class="code"><pre>Creating John Smith <span class="keyword">holds</span> null position
+John Smith <span class="keyword">holds</span> Analyst position
+Creating Bill Walker <span class="keyword">holds</span> null position
+Bill Walker <span class="keyword">holds</span> null position
+</pre></td></tr></table></figure>
+
+<p>注意代码的第7行，副构造函数中调用了主构造函数初始化了名字相关的字段。<br><strong>副构造函数的第一条语句，要么是调用主构造函数，要么是调用另一个副构造函数；二者必选其一。</strong></p>
+<h2 id="单例对象">单例对象</h2>
+<p>Scala中没有静态成员，替代品是单例对象。</p>
+<p>创建单例对象要用object关键字，而非class。因为单实例对象无法初始化，所以不能给它的主构造函数传递参数。</p>
+<p>栗子：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+</pre></td><td class="code"><pre><span class="class"><span class="keyword">class</span> <span class="title">Marker</span><span class="params">(val color: String)</span> {</span>
+    println(<span class="string">"Creating "</span> + <span class="keyword">this</span>);
+
+    <span class="keyword">override</span> <span class="keyword">def</span> toString() : String = <span class="string">"marker color "</span> + color;
+}
+
+<span class="class"><span class="keyword">object</span> <span class="title">MarkerFactory</span> {</span>
+    <span class="keyword">private</span> <span class="keyword">val</span> markers = Map(
+        <span class="string">"red"</span> -&gt; <span class="keyword">new</span> Marker(<span class="string">"red"</span>),
+        <span class="string">"blue"</span> -&gt; <span class="keyword">new</span> Marker(<span class="string">"blue"</span>),
+        <span class="string">"green"</span> -&gt; <span class="keyword">new</span> Marker(<span class="string">"green"</span>)
+    )
+
+    <span class="keyword">def</span> getMarker(color: String) = 
+        <span class="keyword">if</span> (markers.contains(color)) markers(color) <span class="keyword">else</span> <span class="keyword">null</span>
+}
+
+println(MarkerFactory getMarker <span class="string">"blue"</span>)
+println(MarkerFactory getMarker <span class="string">"blue"</span>)
+println(MarkerFactory getMarker <span class="string">"red"</span>)
+println(MarkerFactory getMarker <span class="string">"red"</span>)
+println(MarkerFactory getMarker <span class="string">"yellow"</span>)
+</pre></td></tr></table></figure><br>输出如下：<br><figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+</pre></td><td class="code"><pre>Creating <span class="keyword">marker</span> <span class="keyword">color</span> red
+Creating <span class="keyword">marker</span> <span class="keyword">color</span> blue
+Creating <span class="keyword">marker</span> <span class="keyword">color</span> green
+<span class="keyword">marker</span> <span class="keyword">color</span> blue
+<span class="keyword">marker</span> <span class="keyword">color</span> blue
+<span class="keyword">marker</span> <span class="keyword">color</span> red
+<span class="keyword">marker</span> <span class="keyword">color</span> red
+null
+</pre></td></tr></table></figure>
+
+<p>ps.上面的代码有一个问题，我们可以跳过MarkerFactory直接创建Marker的实例。</p>
+<h2 id="伴生对象">伴生对象</h2>
+<p>Scala也可以创建一个关联到类上的单例。这样的单例同类共享相同的名字，它称为<strong>伴生对象</strong>，对应的类就称为<strong>伴生类</strong>。</p>
+<p>类和伴生对象之间没有界限——它们可以互相访问彼此的private字段和private方法。</p>
+<p>栗子：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+</pre></td><td class="code"><pre><span class="class"><span class="keyword">class</span> <span class="title">Marker</span> <span class="title">private</span> <span class="params">(val color: String)</span> {</span>
+    println(<span class="string">"Creating "</span> + <span class="keyword">this</span>)
+
+    <span class="keyword">override</span> <span class="keyword">def</span> toString() : String = <span class="string">"marker color "</span> + color
+}
+
+<span class="class"><span class="keyword">object</span> <span class="title">Marker</span> {</span>
+    <span class="keyword">private</span> <span class="keyword">val</span> markers = Map(
+        <span class="string">"red"</span> -&gt; <span class="keyword">new</span> Marker(<span class="string">"red"</span>),
+        <span class="string">"blue"</span> -&gt; <span class="keyword">new</span> Marker(<span class="string">"blue"</span>),
+        <span class="string">"green"</span> -&gt; <span class="keyword">new</span> Marker(<span class="string">"green"</span>)
+    )
+
+    <span class="keyword">def</span> getMarker(color : String) = 
+        <span class="keyword">if</span> (markers.contains(color)) markers(color) <span class="keyword">else</span> <span class="keyword">null</span>
+}
+
+println(Marker getMarker <span class="string">"blue"</span>)
+println(Marker getMarker <span class="string">"blue"</span>)
+println(Marker getMarker <span class="string">"red"</span>)
+println(Marker getMarker <span class="string">"red"</span>)
+</pre></td></tr></table></figure><br>输出<br><figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="code"><pre>Creating <span class="keyword">marker</span> <span class="keyword">color</span> red
+Creating <span class="keyword">marker</span> <span class="keyword">color</span> blue
+Creating <span class="keyword">marker</span> <span class="keyword">color</span> green
+<span class="keyword">marker</span> <span class="keyword">color</span> blue
+<span class="keyword">marker</span> <span class="keyword">color</span> blue
+<span class="keyword">marker</span> <span class="keyword">color</span> red
+<span class="keyword">marker</span> <span class="keyword">color</span> red
+</pre></td></tr></table></figure>
+
+<p>可以在伴生对象中创建Marker的实例，但是如果在Marker类或伴生对象之外创建Marker实例，就会得到错误信息。</p>
+<p>但是如果在Marker类或伴生对象之外创建Marker实例，就会得到错误信息。</p>
+<h3 id="使用伴生对象实现static">使用伴生对象实现static</h3>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+</pre></td><td class="code"><pre><span class="class"><span class="keyword">class</span> <span class="title">Marker</span> <span class="title">private</span> <span class="params">(val color: String)</span> {</span>
+}
+
+<span class="class"><span class="keyword">object</span> <span class="title">Marker</span> {</span>
+    <span class="keyword">def</span> primaryColors = <span class="string">"red, green, blue"</span>
+}
+
+println(Marker.primaryColors)
+</pre></td></tr></table></figure>
+
+<p>Scala没有静态字段和静态方法。<br>我们在伴生对象里面写了primaryColors()方法（如果方法没有参数的话，方法定义中的括号是可以省略的）。<br>这样就实现了static的功能。</p>
+<p>参考资料：</p>
+<ol>
+<li>《Scala程序设计》, [美]Venkat Subramaniam </li>
+</ol>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/Scala/">Scala</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/Scala的50%/">Scala的50%</a>, <a href="/tags/读书笔记/">读书笔记</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+<!-- 多说评论框 start -->
+
+	<div class="ds-thread" data-thread-key="2014/05/29/scala_note_class_and_object/" data-title="快速掌握Scala的50%：类和对象基础" data-url="http://www.leejianyang.com/2014/05/29/scala_note_class_and_object/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"leejianyang"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="Search">
+    <input type="hidden" name="q" value="site:www.leejianyang.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/Hexo DIY/">Hexo DIY</a><small>1</small></li>
+  
+    <li><a href="/categories/Scala/">Scala</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2014/05/29/scala_note_class_and_object/">快速掌握Scala的50%：类和对象基础</a>
+      </li>
+    
+      <li>
+        <a href="/2014/05/25/duoshuo_tutorial/">Hexo添加多说评论框指南</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">Tags</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Scala的50%/">Scala的50%</a><small>1</small></li>
+  
+    <li><a href="/tags/多说/">多说</a><small>1</small></li>
+  
+    <li><a href="/tags/评论框/">评论框</a><small>1</small></li>
+  
+    <li><a href="/tags/读书笔记/">读书笔记</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2014 Li Jianyang
+  
+</div>
+<div class="clearfix"></div>
+</footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe84db56ec7ca46c1bf09f72b58cce386' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+</body>
+</html>
