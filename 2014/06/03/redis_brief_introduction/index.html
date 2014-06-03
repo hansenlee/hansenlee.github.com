@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>lee&#39;s blog</title>
+  <title>Redis笔记——基本资料 | lee&#39;s blog</title>
   <meta name="author" content="Li Jianyang">
   
   <meta name="description" content="记录与分享">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  
+  <meta property="og:title" content="Redis笔记——基本资料"/>
   <meta property="og:site_name" content="lee&#39;s blog"/>
 
   
@@ -49,28 +49,65 @@
 <div class="clearfix"></div>
 </header>
   <div id="content" class="inner">
-    <div id="main-col" class="alignleft"><div id="wrapper"><article class="page">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
   
   <div class="post-content">
     <header>
       
+        <div class="icon"></div>
+        <time datetime="2014-06-03T12:53:21.000Z"><a href="/2014/06/03/redis_brief_introduction/">Jun 3 2014</a></time>
+      
       
   
-    <h1 class="title"></h1>
+    <h1 class="title">Redis笔记——基本资料</h1>
   
 
     </header>
     <div class="entry">
       
-        <script type="text/javascript" src="http://www.qq.com/404/search_children.js?edition=small" charset="utf-8"></script>
+        <p>本文为Redis的读书笔记，主要包括什么是Redis？Redis有什么主要特点？支持哪几种数据结构？</p>
+<a id="more"></a>
 
+<h2 id="Redis是什么？">Redis是什么？</h2>
+<p>Redis（<a href="http://redis.io/" target="_blank">官网</a>），据说是REmote DIctionary Server的缩写，它是一个高性能的非关系型数据库。支持in-memory persistent storage on disk, replication和client-side sharding（<em>sharding：根据ID或Hash Key等唯一标识，对数据进行分片</em>）。性能也颇强大，听说每秒支持好几百gigabyte的数据量和上百万个请求。</p>
+<h2 id="Redis与memcached的区别？">Redis与memcached的区别？</h2>
+<p>memcached也是一个很出名的in-memory非关系型数据库，经常有人拿Redis与memcached进行比较，对两种进行简单比较可以进一步了解Redis的一些特征。<br>两者最特出的差别是：<br>Redis除了将数据存储于内存中以外，还可以自动写入硬盘中。<br>Redis有五种数据类型。</p>
+<h2 id="重要特性——持久化存储">重要特性——持久化存储</h2>
+<p>Redis server关闭后数据会怎样？<br>Redis有两种数据持久化存储的方式。<br>其中一种是point-in-time dump：当满足某条件时（通常是某个时间周期）或执行某个point-in-time dump命令时，将数据写入到硬盘中。<br>另一种是方式是使用append-only file，执行每个对数据进行改写的操作时，都记录到硬盘文件中。</p>
+<h2 id="重要特性——主从复制">重要特性——主从复制</h2>
+<p>Redis支持分布式存储，支持主从复制，每个slave都有一份master的完整独立备份。</p>
+<h2 id="五种数据结构简介">五种数据结构简介</h2>
+<p>Redis包含五种数据结构，分别是：<strong>String、List、Hash、Set和Sorted Set</strong></p>
+<p>以下是各数据结构简单的功能：<br><img src="http://blog-ljy.qiniudn.com/redis_data_structures.png" alt=""></p>
 
       
     </div>
     <footer>
       
         
+  
+  <div class="categories">
+    <a href="/categories/Redis/">Redis</a>
+  </div>
+
         
+  
+  <div class="tags">
+    <a href="/tags/读书笔记/">读书笔记</a>
+  </div>
+
         
       
       <div class="clearfix"></div>
@@ -80,7 +117,7 @@
 
 <!-- 多说评论框 start -->
 
-	<div class="ds-thread" data-thread-key="404.html" data-title="" data-url="http://www.leejianyang.com/404.html"></div>
+	<div class="ds-thread" data-thread-key="2014/06/03/redis_brief_introduction/" data-title="Redis笔记——基本资料" data-url="http://www.leejianyang.com/2014/06/03/redis_brief_introduction/"></div>
 <!-- 多说评论框 end -->
 <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 <script type="text/javascript">
