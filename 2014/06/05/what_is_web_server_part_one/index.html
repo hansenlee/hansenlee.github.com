@@ -88,7 +88,7 @@
 <p>当然，现代的web server还有很多其他功能。但归根到底，它们都是在一点上做文章：对HTTP请求作出响应。如果你曾经写过一个echo server（直译就是回音服务器）——它的作用就是单纯地重复一次你发给它的东西，你会发现web server跟它没有太大的差别。它只是针对收到的不同信息作出不同的回应。</p>
 <h2 id="最简单的web_server">最简单的web server</h2>
 <p>在<a href="http://jeffknupp.com/blog/2014/03/03/what-is-a-web-framework/" target="_blank">上一篇文章</a>，我描述了一个最简单的web server。它很像echo server，它回复的内容是固定的。不是反弹输入的信息，而是每一次都返回相同的固定的内容。它的实现代码如下：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
+<figure class="highlight Python"><table><tr><td class="gutter"><pre>1
 2
 3
 4
@@ -106,15 +106,15 @@
 16
 17
 18
-</pre></td><td class="code"><pre>import <span class="keyword">socket</span>
+</pre></td><td class="code"><pre><span class="keyword">import</span> socket
 
-listen_socket = <span class="keyword">socket</span>.<span class="keyword">socket</span>(<span class="keyword">socket</span>.AF_INET, <span class="keyword">socket</span>.SOCK_STREAM)
-listen_socket.<span class="keyword">bind</span>((<span class="string">''</span>, <span class="number">80</span>)) <span class="comment"># remember, 80 is the port for HTTP traffic</span>
-listen_socket.<span class="keyword">listen</span>(<span class="number">1</span>)
-connection, address = listen_socket.<span class="keyword">accept</span>()
-<span class="keyword">while</span> True:
-    connection.<span class="keyword">recv</span>(<span class="number">1024</span>)
-    connection.sendall(<span class="string">""</span><span class="string">"HTTP/1.1 200 OK
+listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+listen_socket.bind((<span class="string">''</span>, <span class="number">80</span>)) <span class="comment"># remember, 80 is the port for HTTP traffic</span>
+listen_socket.listen(<span class="number">1</span>)
+connection, address = listen_socket.accept()
+<span class="keyword">while</span> <span class="keyword">True</span>:
+    connection.recv(<span class="number">1024</span>)
+    connection.sendall(<span class="string">"""HTTP/1.1 200 OK
     Content-type: text/html
 
 
@@ -122,8 +122,8 @@ connection, address = listen_socket.<span class="keyword">accept</span>()
         &lt;body&gt;
             &lt;h1&gt;Hello, World!&lt;/h1&gt;
         &lt;/body&gt;
-    &lt;/html&gt;"</span><span class="string">""</span>)
-    connection.<span class="keyword">close</span>()
+    &lt;/html&gt;"""</span>)
+    connection.close()
 </pre></td></tr></table></figure>
 
 <p>这段代码没有对发来的信息作出恰当的回应，因而称以上的代码为web server有点勉为其难。但是它确确实实对请求作出了回应。HTTP协议携带的内容是纯文本信息，它可以通过简单地调用socket.read()而查看到。</p>
@@ -137,7 +137,7 @@ connection, address = listen_socket.<span class="keyword">accept</span>()
 <p>HTTP响应与HTTP请求非常相似，因而我们不会浪费笔墨对它进行详细介绍。然而有一个不同点，HTTP响应包含着一个status code（状态码），它是一个三位数字，它表示web server进行了什么操作和应该理解解释响应的message-body。</p>
 <h2 id="一个实用的web_server">一个实用的web server</h2>
 <p>我们对web server的初次尝试难称合格，现在我们可以利用刚刚的HTTP请求和响应的知识来增强一下上一版本的web server实现的功能：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
+<figure class="highlight Python"><table><tr><td class="gutter"><pre>1
 2
 3
 4
