@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>读书笔记 | lee&#39;s blog</title>
+  <title>lee&#39;s blog</title>
   <meta name="author" content="Li Jianyang">
   
   <meta name="description" content="记录与分享">
@@ -49,12 +49,7 @@
 <div class="clearfix"></div>
 </header>
   <div id="content" class="inner">
-    <div id="main-col" class="alignleft"><div id="wrapper">
-<h2 class="archive-title tag">读书笔记</h2>
-
-
-  
-    <article class="post">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
   
     <div class="gallery">
   <div class="photoset">
@@ -72,26 +67,64 @@
     <header>
       
         <div class="icon"></div>
-        <time datetime="2014-06-03T12:53:21.000Z"><a href="/2014/06/03/redis_brief_introduction/">Jun 3 2014</a></time>
+        <time datetime="2014-06-17T02:01:51.000Z"><a href="/2014/06/17/restful_design_misunderstanding/">Jun 17 2014</a></time>
       
       
   
-    <h1 class="title"><a href="/2014/06/03/redis_brief_introduction/">Redis笔记——基本资料</a></h1>
+    <h1 class="title"></h1>
   
 
     </header>
     <div class="entry">
       
-        <p>本文为Redis的读书笔记，主要包括什么是Redis？Redis有什么主要特点？支持哪几种数据结构？</p>
+        <p>title: 【转载】一些RESTful框架的设计误区<br>date: 2014-06-17 10:01:51<br>tags:<br>    RESTful<br>    非原创<br>categories:</p>
+<pre><code>web开发
+</code></pre><hr>
+<p>本文属摘录，原文地址：<a href="http://www.ruanyifeng.com/blog/2011/09/restful.html" target="_blank">理解RESTful架构</a></p>
+<p><strong>最常见的一种设计错误，就是URI包含动词。</strong>因为”资源”表示一种实体，所以应该是名词，URI不应该有动词，动词应该放在HTTP协议中。</p>
+<p>举例来说，某个URI是/posts/show/1，其中show是动词，这个URI就设计错了，正确的写法应该是/posts/1，然后用GET方法表示show。</p>
+<p>如果某些动作是HTTP动词表示不了的，你就应该把动作做成一种资源。比如网上汇款，从账户1向账户2汇款500元，错误的URI是：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+</pre></td><td class="code"><pre>POST /accounts/<span class="number">1</span>/transfer/<span class="number">500</span>/<span class="keyword">to</span>/<span class="number">2</span>
+</pre></td></tr></table></figure>
+
+<p>正确的写法是把动词transfer改成名词transaction，资源不能是动词，但是可以是一种服务：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+</pre></td><td class="code"><pre>POST /<span class="keyword">transaction</span> HTTP/<span class="number">1.1</span>
+Host: <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>
+　　
+<span class="keyword">from</span>=<span class="number">1</span>&<span class="keyword">to</span>=<span class="number">2</span>&amount=<span class="number">500.00</span>
+</pre></td></tr></table></figure>
+
+<p><strong>另一个设计误区，就是在URI中加入版本号：</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+</pre></td><td class="code"><pre><span class="label">http:</span>//www<span class="preprocessor">.example</span><span class="preprocessor">.com</span>/app/<span class="number">1.0</span>/foo
+<span class="label">http:</span>//www<span class="preprocessor">.example</span><span class="preprocessor">.com</span>/app/<span class="number">1.1</span>/foo
+<span class="label">http:</span>//www<span class="preprocessor">.example</span><span class="preprocessor">.com</span>/app/<span class="number">2.0</span>/foo
+</pre></td></tr></table></figure>
+
+<p>因为不同的版本，可以理解成同一种资源的不同表现形式，所以应该采用同一个URI。版本号可以在HTTP请求头信息的Accept字段中进行区分(参见<a href="http://www.informit.com/articles/article.aspx?p=1566460" target="_blank">Versioning REST Services</a>)</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+</pre></td><td class="code"><pre><span class="label">Accept:</span> vnd<span class="preprocessor">.example</span>-<span class="keyword">com</span><span class="preprocessor">.foo</span>+json<span class="comment">; version=1.0</span>
+<span class="label">Accept:</span> vnd<span class="preprocessor">.example</span>-<span class="keyword">com</span><span class="preprocessor">.foo</span>+json<span class="comment">; version=1.1</span>
+<span class="label">Accept:</span> vnd<span class="preprocessor">.example</span>-<span class="keyword">com</span><span class="preprocessor">.foo</span>+json<span class="comment">; version=2.0</span>
+</pre></td></tr></table></figure>
+
+
+
 
       
     </div>
     <footer>
       
         
-          <div class="alignleft">
-            <a href="/2014/06/03/redis_brief_introduction/#more" class="more-link">Read More</a>
-          </div>
         
         
       
@@ -102,64 +135,22 @@
 
 <!-- 多说评论框 start -->
 
+	<div class="ds-thread" data-thread-key="2014/06/17/restful_design_misunderstanding/" data-title="" data-url="http://www.leejianyang.com/2014/06/17/restful_design_misunderstanding/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"leejianyang"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
 
-  
-    <article class="post">
-  
-    <div class="gallery">
-  <div class="photoset">
-    
-      <img src="">
-    
-  </div>
-  <div class="control">
-    <div class="prev"></div>
-    <div class="next"></div>
-  </div>
-</div>
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2014-05-29T09:11:30.000Z"><a href="/2014/05/29/scala_note_class_and_object/">May 29 2014</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2014/05/29/scala_note_class_and_object/">快速掌握Scala的50%：类和对象基础</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <p>Scala读书笔记，主要内容是创建类、构造函数、字段、单例对象和单例对象。</p>
-
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2014/05/29/scala_note_class_and_object/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-<!-- 多说评论框 start -->
-
-
-  
-
-  <nav id="pagination">
-  
-  
-  <div class="clearfix"></div>
-</nav>
 </div></div>
     <aside id="sidebar" class="alignright">
   <div class="search">

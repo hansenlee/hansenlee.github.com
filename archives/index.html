@@ -72,6 +72,93 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2014-06-17T02:01:51.000Z"><a href="/2014/06/17/restful_design_misunderstanding/">Jun 17 2014</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2014/06/17/restful_design_misunderstanding/"></a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>title: 【转载】一些RESTful框架的设计误区<br>date: 2014-06-17 10:01:51<br>tags:<br>    RESTful<br>    非原创<br>categories:</p>
+<pre><code>web开发
+</code></pre><hr>
+<p>本文属摘录，原文地址：<a href="http://www.ruanyifeng.com/blog/2011/09/restful.html" target="_blank">理解RESTful架构</a></p>
+<p><strong>最常见的一种设计错误，就是URI包含动词。</strong>因为”资源”表示一种实体，所以应该是名词，URI不应该有动词，动词应该放在HTTP协议中。</p>
+<p>举例来说，某个URI是/posts/show/1，其中show是动词，这个URI就设计错了，正确的写法应该是/posts/1，然后用GET方法表示show。</p>
+<p>如果某些动作是HTTP动词表示不了的，你就应该把动作做成一种资源。比如网上汇款，从账户1向账户2汇款500元，错误的URI是：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+</pre></td><td class="code"><pre>POST /accounts/<span class="number">1</span>/transfer/<span class="number">500</span>/<span class="keyword">to</span>/<span class="number">2</span>
+</pre></td></tr></table></figure>
+
+<p>正确的写法是把动词transfer改成名词transaction，资源不能是动词，但是可以是一种服务：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+</pre></td><td class="code"><pre>POST /<span class="keyword">transaction</span> HTTP/<span class="number">1.1</span>
+Host: <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>
+　　
+<span class="keyword">from</span>=<span class="number">1</span>&<span class="keyword">to</span>=<span class="number">2</span>&amount=<span class="number">500.00</span>
+</pre></td></tr></table></figure>
+
+<p><strong>另一个设计误区，就是在URI中加入版本号：</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+</pre></td><td class="code"><pre><span class="label">http:</span>//www<span class="preprocessor">.example</span><span class="preprocessor">.com</span>/app/<span class="number">1.0</span>/foo
+<span class="label">http:</span>//www<span class="preprocessor">.example</span><span class="preprocessor">.com</span>/app/<span class="number">1.1</span>/foo
+<span class="label">http:</span>//www<span class="preprocessor">.example</span><span class="preprocessor">.com</span>/app/<span class="number">2.0</span>/foo
+</pre></td></tr></table></figure>
+
+<p>因为不同的版本，可以理解成同一种资源的不同表现形式，所以应该采用同一个URI。版本号可以在HTTP请求头信息的Accept字段中进行区分(参见<a href="http://www.informit.com/articles/article.aspx?p=1566460" target="_blank">Versioning REST Services</a>)</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+</pre></td><td class="code"><pre><span class="label">Accept:</span> vnd<span class="preprocessor">.example</span>-<span class="keyword">com</span><span class="preprocessor">.foo</span>+json<span class="comment">; version=1.0</span>
+<span class="label">Accept:</span> vnd<span class="preprocessor">.example</span>-<span class="keyword">com</span><span class="preprocessor">.foo</span>+json<span class="comment">; version=1.1</span>
+<span class="label">Accept:</span> vnd<span class="preprocessor">.example</span>-<span class="keyword">com</span><span class="preprocessor">.foo</span>+json<span class="comment">; version=2.0</span>
+</pre></td></tr></table></figure>
+
+
+
+
+      
+    </div>
+    <footer>
+      
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+<!-- 多说评论框 start -->
+
+
+  
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2014-06-05T14:37:24.000Z"><a href="/2014/06/05/what_is_web_server_part_one/">Jun 5 2014</a></time>
       
       
@@ -290,6 +377,10 @@
 <div class="widget tag">
   <h3 class="title">Recent Posts</h3>
   <ul class="entry">
+    
+      <li>
+        <a href="/2014/06/17/restful_design_misunderstanding/"></a>
+      </li>
     
       <li>
         <a href="/2014/06/05/what_is_web_server_part_one/">【翻译】Web Server是什么？（第一部分）</a>
