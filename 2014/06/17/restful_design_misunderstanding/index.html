@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>lee&#39;s blog</title>
+  <title>【转载】一些RESTful框架的设计误区 | lee&#39;s blog</title>
   <meta name="author" content="Li Jianyang">
   
   <meta name="description" content="记录与分享">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  
+  <meta property="og:title" content="【转载】一些RESTful框架的设计误区"/>
   <meta property="og:site_name" content="lee&#39;s blog"/>
 
   
@@ -71,16 +71,15 @@
       
       
   
-    <h1 class="title"></h1>
+    <h1 class="title">【转载】一些RESTful框架的设计误区</h1>
   
 
     </header>
     <div class="entry">
       
-        <p>title: 【转载】一些RESTful框架的设计误区<br>date: 2014-06-17 10:01:51<br>tags:<br>    RESTful<br>    非原创<br>categories:</p>
-<pre><code>web开发
-</code></pre><hr>
-<p>本文属摘录，原文地址：<a href="http://www.ruanyifeng.com/blog/2011/09/restful.html" target="_blank">理解RESTful架构</a></p>
+        <p>本文属摘录，原文地址：<a href="http://www.ruanyifeng.com/blog/2011/09/restful.html" target="_blank">理解RESTful架构</a></p>
+<a id="more"></a>
+
 <p><strong>最常见的一种设计错误，就是URI包含动词。</strong>因为”资源”表示一种实体，所以应该是名词，URI不应该有动词，动词应该放在HTTP协议中。</p>
 <p>举例来说，某个URI是/posts/show/1，其中show是动词，这个URI就设计错了，正确的写法应该是/posts/1，然后用GET方法表示show。</p>
 <p>如果某些动作是HTTP动词表示不了的，你就应该把动作做成一种资源。比如网上汇款，从账户1向账户2汇款500元，错误的URI是：</p>
@@ -125,7 +124,17 @@ Host: <span class="number">127.0</span><span class="number">.0</span><span class
     <footer>
       
         
+  
+  <div class="categories">
+    <a href="/categories/web开发/">web开发</a>
+  </div>
+
         
+  
+  <div class="tags">
+    <a href="/tags/RESTful/">RESTful</a>, <a href="/tags/非原创/">非原创</a>
+  </div>
+
         
       
       <div class="clearfix"></div>
@@ -135,7 +144,7 @@ Host: <span class="number">127.0</span><span class="number">.0</span><span class
 
 <!-- 多说评论框 start -->
 
-	<div class="ds-thread" data-thread-key="2014/06/17/restful_design_misunderstanding/" data-title="" data-url="http://www.leejianyang.com/2014/06/17/restful_design_misunderstanding/"></div>
+	<div class="ds-thread" data-thread-key="2014/06/17/restful_design_misunderstanding/" data-title="【转载】一些RESTful框架的设计误区" data-url="http://www.leejianyang.com/2014/06/17/restful_design_misunderstanding/"></div>
 <!-- 多说评论框 end -->
 <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 <script type="text/javascript">
@@ -171,7 +180,7 @@ var duoshuoQuery = {short_name:"leejianyang"};
   
     <li><a href="/categories/Scala/">Scala</a><small>1</small></li>
   
-    <li><a href="/categories/web开发/">web开发</a><small>1</small></li>
+    <li><a href="/categories/web开发/">web开发</a><small>2</small></li>
   
   </ul>
 </div>
@@ -183,7 +192,7 @@ var duoshuoQuery = {short_name:"leejianyang"};
   <ul class="entry">
     
       <li>
-        <a href="/2014/06/17/restful_design_misunderstanding/"></a>
+        <a href="/2014/06/17/restful_design_misunderstanding/">【转载】一些RESTful框架的设计误区</a>
       </li>
     
       <li>
@@ -213,6 +222,8 @@ var duoshuoQuery = {short_name:"leejianyang"};
   
     <li><a href="/tags/Python/">Python</a><small>1</small></li>
   
+    <li><a href="/tags/RESTful/">RESTful</a><small>1</small></li>
+  
     <li><a href="/tags/Scala的50%/">Scala的50%</a><small>1</small></li>
   
     <li><a href="/tags/web server/">web server</a><small>1</small></li>
@@ -224,6 +235,8 @@ var duoshuoQuery = {short_name:"leejianyang"};
     <li><a href="/tags/评论框/">评论框</a><small>1</small></li>
   
     <li><a href="/tags/读书笔记/">读书笔记</a><small>2</small></li>
+  
+    <li><a href="/tags/非原创/">非原创</a><small>1</small></li>
   
   </ul>
 </div>
