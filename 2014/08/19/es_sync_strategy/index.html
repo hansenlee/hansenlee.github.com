@@ -1,0 +1,444 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>es_sync_strategy | lee&#39;s blog</title>
+  <meta name="author" content="Li Jianyang">
+  
+  <meta name="description" content="记录与分享">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="es_sync_strategy"/>
+  <meta property="og:site_name" content="lee&#39;s blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="lee&#39;s blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+  <meta name="baidu-site-verification" content="EeO4EOcXAr" />
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">lee&#39;s blog</a></h1>
+  <h2 class="subtitle">世界以痛吻我 要我报之以歌</h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="/atom.xml">RSS</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-08-19T12:59:02.000Z"><a href="/2014/08/19/es_sync_strategy/">Aug 19 2014</a></time>
+      
+      
+  
+    <h1 class="title">es_sync_strategy</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>本文指出了由主数据向Elasticsearch同步数据的注意事项，提出了两种同步策略<br><a id="more"></a></p>
+<p><em>以下内容主要归纳自<a href="https://www.found.no/foundation/keeping-elasticsearch-in-sync/" target="_blank">《Keeping Elasticsearch in Sync》</a></em></p>
+<p>很多情况下，Elasticsearch都不是作为主存储库（原文使用的单词是：authoritative datastore）使用，es都需要先从MySQL等关系型数据库甚至是一些nosql数据库那里把数据同步过来，再进行下一步的工作。下文的同步策略都基于以下前提：数据严格一致（data consistency），延迟控制在可接受的范围（但不是0时延）</p>
+<h2 id="Bulk_API很有必要">Bulk API很有必要</h2>
+<blockquote>
+<p>The bulk API makes it possible to perform many index/delete operations in a single API call. This can greatly increase the indexing speed.</p>
+</blockquote>
+<p>以上是官方对bulk的介绍。总的来说bulk减少API call的成本，加快速度。因而下文的内容都是基于bulk来进行同步的。<br>需要注意的是，bulk不具备事务性，可能部分成功，部分失败。</p>
+<h2 id="更新太频繁带来的问题">更新太频繁带来的问题</h2>
+<p>Elasticsearch基于Lucene，因而“写”数据的性能是一个非常值得关注的问题。一个es index由多个Lucence index组成，而每个Lucence index又由多个segment构成，segment就是document存储的地方了。Segment中的document是<strong>不可变</strong>的。当要更新某个document时，已存储在segment中的旧的document就会标记成已删除，然后再在别的地方存储新的document。不单如此，所有的analyzer都得重新运行，这会造成CPU方面压力。还有多个segment合并的问题。<strong>总而言之，过于频繁的大规模document更新是要避免的。</strong></p>
+<h2 id="两种同步机制">两种同步机制</h2>
+<p>以下有两种同步机制，一种是主存储库的数据会改变，另一种情况数据只新增不改变。</p>
+<h3 id="基于队列">基于队列</h3>
+<p>这里的队列是那种各个元素都是唯一的队列（queue with some sort of uniqueness constraint），例如redis中的sorted set。<br>先看代码：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+</pre></td><td class="code"><pre><span class="comment">// Our ORM Model, linked to a table in our database</span>
+<span class="class"><span class="keyword">class</span> <span class="title">PostModel</span> &lt; <span class="title">ORMModel</span> {</span>
+  <span class="function"><span class="keyword">function</span> <span class="title">after_update</span><span class="params">(function (instance)</span> {</span>
+    elasticsearch_queue.add(instance);
+  })
+}
+
+<span class="comment">// Our queue implementation, it formats the queue entry for an instance</span>
+<span class="comment">// of the ORM model. The queue server could be anything from an SQL table to an AMQP queue</span>
+<span class="class"><span class="keyword">class</span> <span class="title">ElasticsearchQueue</span> &lt; <span class="title">Queue</span> {</span>
+  <span class="function"><span class="keyword">function</span> <span class="title">add</span><span class="params">(instance)</span> {</span>
+    queue_server.insert_unless_exists(record_type: instance.<span class="keyword">class</span>, record_id: instance.id);
+  }
+}
+
+<span class="comment">// Our worker, scheduled to run every N minutes.</span>
+<span class="comment">// It will read 1000 entries off the queue, issue a single batch request</span>
+<span class="comment">// to elasticsearch, and repeat if more items are still on the queue</span>
+<span class="class"><span class="keyword">class</span> <span class="title">QueueWorker</span> &lt; <span class="title">Worker</span> {</span>
+  <span class="function"><span class="keyword">function</span> <span class="title">work</span><span class="params">()</span> {</span>
+    errorCount = <span class="number">0</span>;
+    <span class="comment">// Transactionally reserve 1000 entries at a time, but don't delete them from the queue yet</span>
+    <span class="comment">// The entries will be only be fully deleted once the bulk operation has successfully completed</span>
+    <span class="keyword">while</span> ((queue_entries = Queue.reserve(limit: <span class="number">1000</span>)) && records.length &gt; <span class="number">0</span>) {
+      <span class="keyword">try</span> {
+        <span class="comment">// In this example we will build up the JSON-like body for the </span>
+        <span class="comment">// elasticsearch queue API request. It consists of newline separated</span>
+        <span class="comment">// JSON documents comprising action metadata, and document values</span>
+        bulk_body = <span class="string">""</span>;
+        record_class = Class.named(queue_entry.record_type);
+        i = <span class="number">0</span>;  
+        queue_entries.<span class="keyword">each</span>(<span class="function"><span class="keyword">function</span> <span class="params">(queue_entry)</span> {</span>
+          i++;
+          record = record_class.find(id: queue_entry.record_id);
+       
+          <span class="comment">// Note, a production ready version of this code would double-check that the document still exists</span>
+          <span class="comment">// and would create a bulk delete request if the record was no longer present</span>
+          action_metadata = {index: {
+                              _index: record_class.elasticsearch_index,
+                              _type: record_class.elasticsearch_type,
+                              _id: record.id}}
+       
+          bulk_body += <span class="string">"\n"</span> unless i == <span class="number">1</span>;
+          bulk_body += encode_json(action_metadata);
+          bulk_body += <span class="string">"\n"</span>;            
+          bulk_body += encode_json(record);
+        });
+        
+        bulk_body += <span class="string">"\n"</span>; <span class="comment">// The bulk API requires termination by a newline  </span>
+        http_client.post(<span class="string">"http://host.for.elasticsearch:9200/_bulk"</span>, body: bulk_body);
+        <span class="comment">// Now that we're sure processing has succeeded we can fully delete the queue entries</span>
+        queue_entries.<span class="keyword">delete</span>
+      } <span class="keyword">catch</span> (StandardError ex) {
+        queue_entries.unreserve;
+        
+        <span class="comment">// Simply let the while loop retry up to 5 times.</span>
+        errorCount += <span class="number">1</span>
+        <span class="keyword">if</span> (errorCount &gt;= <span class="number">5</span>) {
+          <span class="keyword">throw</span>(CannotReplicateElasticsearchError);
+        } <span class="keyword">else</span> {
+          Logger.warn(<span class="string">"Error processing elasticsearchqueue, will retry. Attempt: $errorCount"</span>, ex)
+        }
+      }
+    }
+  }
+}
+</pre></td></tr></table></figure>
+
+<p>数据需要更新的时候不是马上写入es，而是先缓存到队列中，周期性地从队列中取数据更新到es中去。这样的做法有多个好处，包括可以很好地控制数据的流量，通过调整同步周期或者增减worker的线程数可以很方便的控制数据的流量。还可以应对主数据库或es的临时性故障。</p>
+<p>要注意队列的线程安全。</p>
+<h3 id="限制每次同步的range">限制每次同步的range</h3>
+<p>这种情况是针对数据只insert不update的情况，例如日志记录。</p>
+<p>代码如下</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+</pre></td><td class="code"><pre><span class="comment">// Gets executed every ten seconds</span>
+<span class="class"><span class="keyword">class</span> <span class="title">LocationImportWorker</span> &lt; <span class="title">PeriodicWorker</span> {</span>
+    <span class="function"><span class="keyword">function</span> <span class="title">work</span><span class="params">()</span> {</span>
+        <span class="comment">// If a job runs long, we want the next one to block waiting on this one</span>
+        <span class="comment">// This is a naive way of handling this situation, ideally both jobs could run concurrently using </span>
+        <span class="comment">// more careful state tracking that is beyond the scope of this example</span>
+        lock = acquire_lock(<span class="string">"location_import_work"</span>); 
+        
+        last_job_range_end = get_last_job_range_end();
+        <span class="comment">// Use the datastore's clock to prevent any bugs from clock skew</span>
+        <span class="comment">// Choose 1 second ago, since the current second may yet see more records!</span>
+        this_job_range_end = Datastore.query(<span class="string">"now() - '1 second'); 
+
+        locations = UserGeoLocations.where("</span>timestamp &gt; <span class="variable">$last_job_ended_at</span> <span class="keyword">AND</span> timestamp &lt; <span class="variable">$this_job_range_end</span>);
+        <span class="comment">// In this example the boilerplate for generating a bulk HTTP request has been omitted</span>
+        elasticsearch_client.bulk_index(locations); 
+        
+        set_last_job_range_end(this_job_range_end);
+        
+        lock.release();
+    }
+}
+</pre></td></tr></table></figure>
+
+<p>逻辑非常简单，既然数据不会变，单个worker流水线地将数据写入到es中去就可以了。</p>
+<p><strong>注意：需要保证以上所有对es的操作都是幂等的（idempotent）。</strong></p>
+<p>以下内容为ps部分：<br>上面提及到存储日志记录，可以考虑对日志记录按时间段分开不同的index进行存储。<br>基于这两个原因：<br>（1）es的查询支持跨index且不会有性能损失<br>（2）把整个index删掉的比从某个index中删除某些document在性能方面优越得多。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/Elasticsearch/">Elasticsearch</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/bulk/">bulk</a>, <a href="/tags/数据同步/">数据同步</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+<!-- 多说评论框 start -->
+
+	<div class="ds-thread" data-thread-key="2014/08/19/es_sync_strategy/" data-title="es_sync_strategy" data-url="http://www.leejianyang.com/2014/08/19/es_sync_strategy/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"leejianyang"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="Search">
+    <input type="hidden" name="q" value="site:www.leejianyang.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/Elasticsearch/">Elasticsearch</a><small>1</small></li>
+  
+    <li><a href="/categories/Hexo DIY/">Hexo DIY</a><small>1</small></li>
+  
+    <li><a href="/categories/Redis/">Redis</a><small>1</small></li>
+  
+    <li><a href="/categories/Scala/">Scala</a><small>1</small></li>
+  
+    <li><a href="/categories/web开发/">web开发</a><small>2</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2014/08/19/es_sync_strategy/">es_sync_strategy</a>
+      </li>
+    
+      <li>
+        <a href="/2014/06/17/restful_design_misunderstanding/">【转载】一些RESTful API的设计误区</a>
+      </li>
+    
+      <li>
+        <a href="/2014/06/05/what_is_web_server_part_one/">【翻译】Web Server是什么？（第一部分）</a>
+      </li>
+    
+      <li>
+        <a href="/2014/06/03/redis_brief_introduction/">Redis笔记——基本资料</a>
+      </li>
+    
+      <li>
+        <a href="/2014/05/29/scala_note_class_and_object/">快速掌握Scala的50%：类和对象基础</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">Tags</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Python/">Python</a><small>1</small></li>
+  
+    <li><a href="/tags/RESTful/">RESTful</a><small>1</small></li>
+  
+    <li><a href="/tags/Scala的50%/">Scala的50%</a><small>1</small></li>
+  
+    <li><a href="/tags/bulk/">bulk</a><small>1</small></li>
+  
+    <li><a href="/tags/web server/">web server</a><small>1</small></li>
+  
+    <li><a href="/tags/原创翻译/">原创翻译</a><small>1</small></li>
+  
+    <li><a href="/tags/多说/">多说</a><small>1</small></li>
+  
+    <li><a href="/tags/数据同步/">数据同步</a><small>1</small></li>
+  
+    <li><a href="/tags/评论框/">评论框</a><small>1</small></li>
+  
+    <li><a href="/tags/读书笔记/">读书笔记</a><small>2</small></li>
+  
+    <li><a href="/tags/非原创/">非原创</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2014 Li Jianyang
+  
+</div>
+<div class="clearfix"></div>
+</footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe84db56ec7ca46c1bf09f72b58cce386' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+</body>
+</html>
