@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>lee&#39;s blog</title>
+  <title>【翻译】非阻塞服务器的主要问题 | lee&#39;s blog</title>
   <meta name="author" content="Li Jianyang">
   
   <meta name="description" content="记录与分享">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  
+  <meta property="og:title" content="【翻译】非阻塞服务器的主要问题"/>
   <meta property="og:site_name" content="lee&#39;s blog"/>
 
   
@@ -49,28 +49,92 @@
 <div class="clearfix"></div>
 </header>
   <div id="content" class="inner">
-    <div id="main-col" class="alignleft"><div id="wrapper"><article class="page">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
   
   <div class="post-content">
     <header>
       
+        <div class="icon"></div>
+        <time datetime="2014-08-30T02:27:32.000Z"><a href="/2014/08/30/non_blocking_server/">Aug 30 2014</a></time>
+      
       
   
-    <h1 class="title"></h1>
+    <h1 class="title">【翻译】非阻塞服务器的主要问题</h1>
   
 
     </header>
     <div class="entry">
       
-        <script type="text/javascript" src="http://www.qq.com/404/search_children.js?edition=small" charset="utf-8"></script>
+        <p>通常人们对非阻塞服务器的理解有点误区。有些人甚至在非阻塞框架（例如Python的Tornado框架）上写的所有代码用到的技术都是阻塞的，这样完全发挥不出非阻塞服务器的优势。</p>
+<a id="more"></a>
 
+<p>使用非阻塞服务器的主要优势是可扩展性问题都可以迎刃而解，而且性能棒棒哒。主要的问题是，当你采用非阻塞的框架时，你使用的所有IO和网络调用都必须也是非阻塞的。有些人走入了一个怪圈，使用非阻塞的服务器，却又用阻塞的库。</p>
+<p>这篇文章主要讲述基于线程的服务器和非阻塞的服务器是如何工作的，以及为什么如果你使用的库是阻塞式的，你就不一样使用非阻塞的服务器。</p>
+<h2 id="非阻塞服务器性能更佳">非阻塞服务器性能更佳</h2>
+<p>首先，我不想争论阻塞式和非阻塞式服务器谁的性能更佳。在大多数情况下，非阻塞服务器在响应数千并发用户时的表现更佳。请看以下由WebFaction进行的基准测试的结果：<br><a href="http://blog.webfaction.com/a-little-holiday-present" target="_blank">http://blog.webfaction.com/a-little-holiday-present</a></p>
+<p>他们使用Apache和nginx进行测试的时候发现：</p>
+<p>nginx每秒可以处理更多的并发<br><img src="http://amix.dk/uploads/req_pr_sec.png" alt=""></p>
+<p>nginx占用的内存比apache小得多<br><img src="http://amix.dk/uploads/memory_usage.png" alt=""></p>
+<p>看到以上结果，还有什么理由不在你的Python/Java/Ruby/PHP框架上使用非阻塞技术呢？</p>
+<h2 id="阻塞式的服务器如何工作">阻塞式的服务器如何工作</h2>
+<p>阻塞式服务器通常使用多线程技术，每个线程负责处理一个请求。基本原理如下图：</p>
+<p><img src="http://amix.dk/uploads/threaded_server.png" alt=""></p>
+<p>以下结论通常是成立的：</p>
+<ul>
+<li>处理数千个并发时的性能开销很大，因为服务器需要spawn很多线程，而线程的性能开销并不小；</li>
+<li>你使用的库必须是线程安全的；</li>
+</ul>
+<h2 id="非阻塞式服务器如何工作">非阻塞式服务器如何工作</h2>
+<p>非阻塞式服务器并不采用多线程技术，它们使用IO循环和事件来处理请求。基本原理如下图：</p>
+<p><img src="http://amix.dk/uploads/non_blocking_server.png" alt=""></p>
+<p>以下结论通常是成立的：</p>
+<ul>
+<li>非阻塞式服务器处理数千个并发妥妥的，这正是它的强项；</li>
+<li>IO循环中执行的所有任务必须是非阻塞的，否则整个IO循环会被阻塞直到正在执行的阻塞式操作结束；</li>
+<li>线程安全不是问题</li>
+</ul>
+<h2 id="Tornado（或其他阻塞式服务器）的窘况">Tornado（或其他阻塞式服务器）的窘况</h2>
+<p>我用Tornado举个栗子，但其他很多非阻塞式的解决方案中都存在相似的问题。</p>
+<p>使用Tornado时的窘况是，有些人使用了阻塞式的库。例如：</p>
+<ul>
+<li>MySQL阻塞：如果有一个需要耗费1秒的MySQL查询，那么你的IO循环会被阻塞一秒，在这一秒内你不能处理其他的任何请求；</li>
+<li>进行一个耗时的系统调用：该系统调用会阻塞你的IO循环；</li>
+<li>进行一个耗时的模板渲染：这同样会阻塞你的IO循环！</li>
+</ul>
+<p>正如我之前说的，阻塞IO循环对于性能的影响是致命的！因为IO循环被阻塞的时候，你不能处理其他任何的事件。</p>
+<h2 id="结论">结论</h2>
+<p>结论是，非阻塞式技术很腻害且性能往往很优异。但<strong>要最大程度地发挥非阻塞技术的优势，你的所有IO和网络调用必须也是非阻塞的</strong>。</p>
+<p>还要注意的是，大多数语言例如 Python, Ruby, Java or PHP，它们的很多操作默认都是阻塞的，当你使用这些语言运用非阻塞技术时，你要非常谨慎。</p>
+<p>翻译注：本文的服务器(server)maybe更合适的说法是web framework</p>
 
       
     </div>
     <footer>
       
         
+  
+  <div class="categories">
+    <a href="/categories/web开发/">web开发</a>
+  </div>
+
         
+  
+  <div class="tags">
+    <a href="/tags/非阻塞/">非阻塞</a>, <a href="/tags/服务器/">服务器</a>, <a href="/tags/web framework/">web framework</a>, <a href="/tags/Tornado/">Tornado</a>, <a href="/tags/原创翻译/">原创翻译</a>
+  </div>
+
         
       
       <div class="clearfix"></div>
@@ -80,7 +144,7 @@
 
 <!-- 多说评论框 start -->
 
-	<div class="ds-thread" data-thread-key="404.html" data-title="" data-url="http://www.leejianyang.com/404.html"></div>
+	<div class="ds-thread" data-thread-key="2014/08/30/non_blocking_server/" data-title="【翻译】非阻塞服务器的主要问题" data-url="http://www.leejianyang.com/2014/08/30/non_blocking_server/"></div>
 <!-- 多说评论框 end -->
 <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 <script type="text/javascript">
